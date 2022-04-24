@@ -5,7 +5,9 @@ from telebot import types
 from glob import glob
 from random import choice, shuffle
 from SQLighter import read_sqlite_table
-from parsing import parsing_info, make_photo_exist, all_characters
+from parsing import make_photo_exist, all_characters
+import requests
+from bs4 import BeautifulSoup
 
 bot = telebot.TeleBot(config.TOKEN)
 
@@ -55,9 +57,28 @@ def parsing_info(message):
     bot.register_next_step_handler(msg, answer_wiki)
 
 
+def parsing_info(who='Хуа_Чэн'):
+    url = "https://heavenofficialsblessing.fandom.com/ru/wiki/" + who
+    r = requests.get(url)
+    soup = BeautifulSoup(r.text, 'lxml')
+    pict_src = soup.find('aside',
+                         class_='portable-infobox pi-background pi-border-color pi-theme-wikia pi-layout-default').find(
+        'a', class_='image image-thumbnail').get('href').replace("&amp;",
+                                                                 "&")  # убрать amp;   str.replace("&amp;", "&");
+    summary_data = soup.find('aside',
+                             class_='portable-infobox pi-background pi-border-color pi-theme-wikia pi-layout-default').findAll(
+        'section')[1].findAll('div', class_='pi-item pi-data pi-item-spacing pi-border-color')
+    main_info = ''
+    for data in summary_data:
+        main_info += '\n' + data.find('h3').text + ': \n' + data.find('div').get_text(separator='\n')
+
+    return (pict_src, main_info)
+
 def answer_wiki(message):
     global who
     who = list_of_ch[message.text]
+    print(who)
+    bot.send_message(message.chat.id, parsing_info(who)[1])
 
 
 #  bot.send_photo(message.chat.id, photo=open('images_parsing/Хуа_Чэн.jpg', 'rb'))

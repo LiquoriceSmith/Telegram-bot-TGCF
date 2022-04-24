@@ -4,7 +4,6 @@ from bs4 import BeautifulSoup
 
 
 def parsing_info(who='Хуа_Чэн'):
-    who = 'Хуа_Чэн'
     url = "https://heavenofficialsblessing.fandom.com/ru/wiki/" + who
     r = requests.get(url)
     soup = BeautifulSoup(r.text, 'lxml')
