@@ -5,7 +5,7 @@ from telebot import types
 from glob import glob
 from random import choice, shuffle
 from SQLighter import read_sqlite_table
-from parsing import parsing_info, make_photo_exist
+from parsing import parsing_info, make_photo_exist, all_characters
 
 bot = telebot.TeleBot(config.TOKEN)
 
@@ -39,16 +39,29 @@ def answer_check(message):
         msg = bot.send_message(message.chat.id, 'Верно!')
     if message.text != answer:
         msg = bot.send_message(message.chat.id, 'Вы ошиблись :( Верный ответ: ' + answer)
+
+
 #   bot.register_next_step_handler(msg, start_message)
 
 
-info = parsing_info()[1]
+# info = parsing_info()[1]
+# print(info)
 
 
 @bot.message_handler(commands=['Wiki'])
 def parsing_info(message):
-    bot.send_photo(message.chat.id, photo=open('images_parsing/Хуа_Чэн.jpg', 'rb'))
-    bot.send_message(message.chat.id, info)
+    generate_markup_of_characters()
+    msg = bot.send_message(message.chat.id, 'Про какого персонажа вы хотите узнать', reply_markup=markup)
+    bot.register_next_step_handler(msg, answer_wiki)
+
+
+def answer_wiki(message):
+    global who
+    who = list_of_ch[message.text]
+
+
+#  bot.send_photo(message.chat.id, photo=open('images_parsing/Хуа_Чэн.jpg', 'rb'))
+# bot.send_message(message.chat.id, info)
 
 
 # _________________________________________-
@@ -67,6 +80,15 @@ def generate_markup():
     return markup
 
 
+def generate_markup_of_characters():
+    global markup, list_of_ch
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
+    list_of_ch = all_characters()
+    for key in list_of_ch:
+        markup.add(key)
+    return markup
+
+
 @bot.message_handler(content_types='text')
 def bot_work(message):
     if message.text == "Отправь картинку":
@@ -77,4 +99,4 @@ def bot_work(message):
 
 if __name__ == '__main__':
     bot.polling()
-    bot.infinity_polling()
+# bot.infinity_polling()
