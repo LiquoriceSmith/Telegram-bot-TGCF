@@ -3,27 +3,24 @@ from glob import glob
 from random import choice, shuffle
 import aiogram.dispatcher.webhook
 from aiogram import Bot, Dispatcher, executor, types
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.dispatcher.filters.state import StatesGroup, State
+from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters import Command
 import aiogram.utils.markdown as fmt
 import config
 from parsing import parsing_info, all_characters
 from SQLighter import read_sqlite_table
 
 bot = Bot(token=config.TOKEN, parse_mode=types.ParseMode.HTML)
-dp = Dispatcher(bot)
+storage = MemoryStorage()
+dp = Dispatcher(bot, storage=storage)
 logging.basicConfig(level=logging.INFO)
 
 
 @dp.message_handler(commands="start")
 async def cmd_test1(message: types.Message):
     await message.answer("Привет. Это бот по новелле Благословение Небожителей. Чтобы начать, напиши /button")
-
-
-@dp.message_handler(commands="test4")
-async def with_hidden_link(message: types.Message):
-    a = parsing_info()
-    await message.answer(
-        f"{fmt.hide_link(a[0])}{a[1]}",
-        parse_mode=types.ParseMode.HTML)
 
 
 @dp.message_handler(commands="button")
@@ -49,10 +46,10 @@ async def cmd_game(message: types.Message):
     await message.answer("Выберите правильный ответ", reply_markup=markup)
 
 
-@dp.message_handler(commands='wiki')
-async def cmd_wiki(message: types.Message):
-    generate_markup_of_characters()
-    await message.answer('Про какого персогажа вы хотите узнать?', reply_markup=markup)
+# @dp.message_handler(commands='wiki')
+# async def cmd_wiki(message: types.Message):
+# generate_markup_of_characters()
+# await message.answer('Про какого персогажа вы хотите узнать?', reply_markup=markup)
 
 
 def generate_markup():
@@ -77,6 +74,30 @@ def generate_markup_of_characters():
         markup.add(key)
     return markup
 
+
+class Wiki(StatesGroup):
+    namechar = State()
+
+
+@dp.message_handler(Command('wiki'), state=None)
+async def cmd_wiki(message: types.Message):
+    generate_markup_of_characters()
+    await message.answer('Про какого персогажа вы хотите узнать?', reply_markup=markup)
+    await Wiki.namechar.set()
+
+
+@dp.message_handler(state=Wiki.namechar)
+async def answer_q1(message: types.Message, state: FSMContext):
+    answer = message.text
+    await state.update_data(answer1=answer)
+    data = await state.get_data()
+    answer1 = data.get('answer1')
+    print(list_of_ch[answer1])
+    a = parsing_info(answer1)
+    await message.answer(
+        f"{fmt.hide_link(a[0])}{a[1]}",
+        parse_mode=types.ParseMode.HTML)
+    await state.finish()
 
 
 # Хэндлер на команду /test2

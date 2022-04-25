@@ -21,12 +21,12 @@ def parsing_info(who='Хуа_Чэн'):
     return (pict_src, main_info)
 
 
-def make_photo_exist(who='Хуа_Чэн'):
-    url = parsing_info(who)[0]
-    img = urllib.request.urlopen(url).read()
-    out = open("images_parsing/" + who + ".jpg", "wb")
-    out.write(img)
-    out.close()
+# def make_photo_exist(who='Хуа_Чэн'):
+# url = parsing_info(who)[0]
+# img = urllib.request.urlopen(url).read()
+# out = open("images_parsing/" + who + ".jpg", "wb")
+# out.write(img)
+# out.close()
 
 
 def all_characters():
@@ -45,6 +45,4 @@ def all_characters():
             list_of_ch[char_name] = char_name_fixed
         except Exception:
             pass
-
     return list_of_ch
-
