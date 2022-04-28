@@ -6,6 +6,7 @@ async def cmd_test1(message: types.Message):
     await message.answer("Привет. Это бот по новелле Благословение Небожителей. Чтобы начать, напиши /button")
 
 
+
 async def cmd_start(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     buttons = ["/picture", "/game", "/wiki"]

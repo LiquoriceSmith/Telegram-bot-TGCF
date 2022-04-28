@@ -8,12 +8,17 @@ from create_bot import dp, bot
 
 class Game(StatesGroup):
     count_answer = 0
-    count_questions = 1
+    count_questions = 0
     q1 = State()
 
 
 async def cmd_game(message: types.Message):
+    global thx_next
+    thx_next = set()
     generate_markup()
+    while markup in thx_next:
+        generate_markup()
+    thx_next.add(markup)
     await bot.send_photo(chat_id=message.chat.id, photo=raw[1])
     await message.answer("Выберите правильный ответ", reply_markup=markup)
     await Game.q1.set()
@@ -26,14 +31,19 @@ async def answer(message: types.Message, state: FSMContext):
     answer1 = data.get('answer1')
     if answer1 == true_answer:
         Game.count_answer += 1
-    generate_markup()
-    await bot.send_photo(chat_id=message.chat.id, photo=raw[1])
-    await message.answer("Выберите правильный ответ", reply_markup=markup)
-    if Game.count_questions < 5:
+    if Game.count_questions < 10:
         await Game.q1.set()
+        generate_markup()
+        while markup in thx_next:
+            generate_markup()
+        thx_next.add(markup)
+        await bot.send_photo(chat_id=message.chat.id, photo=raw[1])
+        await message.answer("Выберите правильный ответ", reply_markup=markup)
     else:
         await state.finish()
-        print(Game.count_answer)
+        await message.answer('Вы правильно ответили на ' + str(Game.count_answer) + ' вопросов')
+        Game.count_answer = 0
+        Game.count_questions = 0
 
 
 def register_handlers_game(dp: Dispatcher):
@@ -45,7 +55,6 @@ def generate_markup():
     global markup, raw, true_answer
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
     raw = read_sqlite_table()
-    print(raw)
     all_answers = raw[2] + ', ' + raw[3]
     all_answers = all_answers.split(', ')
     true_answer = raw[2]
