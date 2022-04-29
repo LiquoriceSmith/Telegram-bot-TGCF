@@ -31,6 +31,9 @@ async def answer(message: types.Message, state: FSMContext):
     answer1 = data.get('answer1')
     if answer1 == true_answer:
         Game.count_answer += 1
+        await message.answer('Правильный ответ! :)')
+    else:
+        await message.answer('Неправильный ответ :(')
     if Game.count_questions < 10:
         await Game.q1.set()
         generate_markup()

@@ -4,6 +4,7 @@ from parsing import parsing_info, all_characters
 from aiogram.dispatcher import FSMContext
 import aiogram.utils.markdown as fmt
 from create_bot import dp, bot
+from handlers.common import cmd_start
 
 
 class Wiki(StatesGroup):
@@ -17,16 +18,26 @@ async def cmd_wiki(message: types.Message):
 
 
 async def answer_q1(message: types.Message, state: FSMContext):
+    is_error = False
     answer = message.text
     await state.update_data(answer1=answer)
     data = await state.get_data()
     answer1 = data.get('answer1')
-    print(list_of_ch[answer1])
-    a = parsing_info(answer1)
-    await message.answer(
-        f"{fmt.hide_link(a[0])}{a[1]}",
-        parse_mode=types.ParseMode.HTML)
-    await state.finish()
+    # print(list_of_ch[answer1])
+    try:
+        a = parsing_info(answer1)
+    except AttributeError:
+        is_error = True
+        await message.answer('Выберите имя из списка.', reply_markup=markup)
+        await cmd_wiki(message)
+    if is_error is False:
+        try:
+            await message.answer(f"{fmt.hide_link(a[0])}{a[1].replace('<', 'меньше')}", parse_mode=types.ParseMode.HTML)
+        except Exception:
+            await message.answer('Сервер не может рассказать про него. Попробуйте это позже')
+
+        await cmd_start(message)
+        await state.finish()
 
 
 def register_handlers_wiki(dp: Dispatcher):

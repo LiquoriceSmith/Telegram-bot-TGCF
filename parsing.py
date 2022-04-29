@@ -7,10 +7,13 @@ def parsing_info(who='Хуа_Чэн'):
     url = "https://heavenofficialsblessing.fandom.com/ru/wiki/" + who
     r = requests.get(url)
     soup = BeautifulSoup(r.text, 'lxml')
-    pict_src = soup.find('aside',
-                         class_='portable-infobox pi-background pi-border-color pi-theme-wikia pi-layout-default').find(
-        'a', class_='image image-thumbnail').get('href').replace("&amp;",
-                                                                 "&")  # убрать amp;   str.replace("&amp;", "&");
+    try:
+        pict_src = soup.find('aside',
+                             class_='portable-infobox pi-background pi-border-color pi-theme-wikia pi-layout-default').find(
+            'a', class_='image image-thumbnail').get('href').replace("&amp;",
+                                                                     "&")  # убрать amp;   str.replace("&amp;", "&");
+    except AttributeError:
+        pict_src = "https://upload.wikimedia.org/wikipedia/commons/9/9a/%D0%9D%D0%B5%D1%82_%D1%84%D0%BE%D1%82%D0%BE.png"
     summary_data = soup.find('aside',
                              class_='portable-infobox pi-background pi-border-color pi-theme-wikia pi-layout-default').findAll(
         'section')[1].findAll('div', class_='pi-item pi-data pi-item-spacing pi-border-color')
@@ -42,7 +45,12 @@ def all_characters():
             char_name_fixed = ('_').join(char_name.split(' '))
             if 'Хуа_Чэн' in char_name_fixed:
                 char_name_fixed = 'Хуа_Чэн'
-            list_of_ch[char_name] = char_name_fixed
+            if char_name == 'Наньгун Цзе':
+                list_of_ch['Линвэнь'] = 'Линвэнь'
+            elif char_name == 'Сяньлэ' or char_name == 'Баньюэ' or char_name == 'Сюань Цзы':
+                continue
+            else:
+                list_of_ch[char_name] = char_name_fixed
         except Exception:
             pass
     return list_of_ch
