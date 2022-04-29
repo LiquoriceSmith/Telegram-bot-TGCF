@@ -4,6 +4,7 @@ from aiogram.dispatcher import FSMContext
 from SQLighter import read_sqlite_table
 from random import shuffle
 from create_bot import dp, bot
+from handlers.common import cmd_start
 
 
 class Game(StatesGroup):
@@ -42,6 +43,7 @@ async def answer(message: types.Message, state: FSMContext):
             Game.count_answer) + ' из ' + str(Game.count_questions) + ' вопросов')
         Game.count_answer = 0
         Game.count_questions = 0
+        await cmd_start(message)
     else:
         await Game.q1.set()
         generate_markup()
