@@ -9,6 +9,7 @@ async def cmd_picture(message: types.Message):
     picture = choice(lists)
     photo = open(picture, 'rb')
     await bot.send_photo(chat_id=message.chat.id, photo=photo)
+    await message.answer('Выберите, что вам надо')
 
 
 def register_handlers_pic(dp: Dispatcher):

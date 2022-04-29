@@ -19,8 +19,9 @@ async def cmd_game(message: types.Message):
     while markup in thx_next:
         generate_markup()
     thx_next.add(markup)
+    await message.answer('Игра началась. Всего будет 10 вопросов. Чтобы досрочно остановить игру, отправьте /stop')
+    await message.answer("Кто это? Выберите правильный ответ", reply_markup=markup)
     await bot.send_photo(chat_id=message.chat.id, photo=raw[1])
-    await message.answer("Выберите правильный ответ", reply_markup=markup)
     await Game.q1.set()
 
 
@@ -34,19 +35,21 @@ async def answer(message: types.Message, state: FSMContext):
         await message.answer('Правильный ответ! :)')
     else:
         await message.answer('Неправильный ответ :(')
-    if Game.count_questions < 10:
+
+    if Game.count_questions >= 10 or message.text == '/stop':
+        await state.finish()
+        await message.answer('Игра закончена. Вы правильно ответили на ' + str(
+            Game.count_answer) + ' из ' + str(Game.count_questions) + ' вопросов')
+        Game.count_answer = 0
+        Game.count_questions = 0
+    else:
         await Game.q1.set()
         generate_markup()
         while markup in thx_next:
             generate_markup()
         thx_next.add(markup)
+        await message.answer("Кто это? Выберите правильный ответ", reply_markup=markup)
         await bot.send_photo(chat_id=message.chat.id, photo=raw[1])
-        await message.answer("Выберите правильный ответ", reply_markup=markup)
-    else:
-        await state.finish()
-        await message.answer('Вы правильно ответили на ' + str(Game.count_answer) + ' вопросов')
-        Game.count_answer = 0
-        Game.count_questions = 0
 
 
 def register_handlers_game(dp: Dispatcher):
