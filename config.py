@@ -1,2 +1,2 @@
-TOKEN = "5154606176:AAGQpKYFccgOrVC7zv7Swo7FU4XFV5aevX4"
+TOKEN = "here should be my TOKEN "
 database_name = 'game.db'
